@@ -137,7 +137,7 @@ info@diskoverdiagnostics.com
 
 # License
 
-Copyright DemandScape
+Proprietary – All rights reserved.
 
-All rights reserved.
+© 2026 Diskover Diagnostics
 
