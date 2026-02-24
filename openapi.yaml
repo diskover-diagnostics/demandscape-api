@@ -1,0 +1,384 @@
+openapi: 3.0.3
+
+# Hosted on GitHub — served via jsDelivr CDN:
+# https://cdn.jsdelivr.net/gh/{owner}/{repo}@main/openapi.yaml
+
+info:
+  title: DemandScape Forecast API
+  description: |
+    Demand forecasting API for medtech products across markets.
+    Supports multi-scenario probabilistic forecasting with confidence scoring.
+
+    ## Authentication
+    Every request requires **two** auth layers:
+    1. **HF Bearer Token** — `Authorization: Bearer <HF_TOKEN>` (HuggingFace infrastructure)
+    2. **Partner API Key** — `x-api-key` field in the **JSON body** (handler-level auth)
+
+    > HuggingFace Inference Endpoints do not forward custom HTTP headers to the handler.
+    > The `x-api-key` must be a top-level field in the request body, not just an HTTP header.
+
+    ## Rate Limits (per partner)
+    | Limit | Default | Override env var |
+    |-------|---------|-----------------|
+    | Requests / minute | 10 | `RATE_LIMIT_PER_MINUTE` |
+    | Requests / UTC day | 100 | `DAILY_QUOTA` |
+
+    ## Error Handling
+    Handler-level errors (auth / throttle) are returned as **HTTP 200** with an `error` field
+    in the JSON body. Check for `response.error` before processing forecasts.
+  version: "1.0.0"
+  contact:
+    name: Diskover Diagnostics
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://i3302d3uxvtjxwjm.us-east-1.aws.endpoints.huggingface.cloud
+    description: HuggingFace Inference Endpoint (Production)
+
+security:
+  - bearerAuth: []
+
+paths:
+  /:
+    post:
+      summary: Generate demand forecasts
+      description: |
+        Submit historical demand data and scenario parameters to generate
+        probabilistic demand forecasts across multiple named scenarios.
+
+        **Input format:**
+        - Provide full time series per product-market combination
+        - Last `prediction_length` rows (default 6) should have `units_sold = null`
+        - All `planned_*` columns default to baseline values if omitted
+
+        **Output:**
+        - P10 / P50 / P90 quantile forecasts per series per scenario
+        - Confidence label (HIGH / MEDIUM / LOW) and numeric score per series
+        - `requires_review` flag for LOW-confidence series
+      operationId: generateForecasts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForecastRequest'
+            example:
+              x-api-key: "your-raw-partner-api-key"
+              inputs:
+                data:
+                  month: ["2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08"]
+                  product_id: ["P001","P001","P001","P001","P001","P001","P001","P001"]
+                  market_id: ["M001","M001","M001","M001","M001","M001","M001","M001"]
+                  units_sold: [100,110,120,115,130,125,null,null]
+                  planned_price_index: [1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0]
+                  planned_discount_pct: [0,0,0,0,0,0,0,0]
+                  planned_promo_flag: [0,0,0,0,0,0,0,0]
+                  planned_tender_flag: [0,0,0,0,0,0,0,0]
+                  planned_supply_risk: [0,0,0,0,0,0,0,0]
+                  planned_competitor_pressure: [0,0,0,0,0,0,0,0]
+                  planned_regulatory_event_flag: [0,0,0,0,0,0,0,0]
+                parameters:
+                  encoder_length: 12
+                  prediction_length: 2
+                  n_samples: 500
+                  quantiles: [0.1, 0.5, 0.9]
+                  round_outputs: true
+                  scenarios:
+                    base: {}
+                    price_up_10pct:
+                      planned_price_index: 1.1
+                    discount_20pct:
+                      planned_discount_pct: 20
+      responses:
+        '200':
+          description: |
+            Response envelope. Always HTTP 200 from the HF infrastructure layer.
+            Inspect the body for handler-level auth / throttle errors.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ForecastResponse'
+                  - $ref: '#/components/schemas/HandlerErrorResponse'
+              examples:
+                success:
+                  summary: Successful forecast
+                  value:
+                    forecasts:
+                      - scenario: "base"
+                        product_id: "P001"
+                        market_id: "M001"
+                        time_idx: 6
+                        month: "2024-07-01"
+                        horizon_step: 1
+                        point_mean: 128.0
+                        p10: 110.0
+                        p50: 128.0
+                        p90: 148.0
+                        confidence_label: "HIGH"
+                        confidence_score: 82
+                        requires_review: false
+                    summary:
+                      total_forecasts: 4
+                      scenarios: ["base","price_up_10pct"]
+                      products: 1
+                      markets: 1
+                      confidence_distribution: {"HIGH": 4}
+                    metadata:
+                      model_type: "DeepAR"
+                      target: "units_sold"
+                      series_columns: ["product_id","market_id"]
+                      partner: "partner-a"
+                      usage:
+                        partner: "partner-a"
+                        requests_last_minute: 1
+                        rate_limit_per_minute: 10
+                        requests_today: 3
+                        daily_quota: 100
+                unauthorized:
+                  summary: Invalid or missing API key
+                  value:
+                    error: "Unauthorized"
+                    detail: "Invalid API key."
+                    status: 401
+                throttled:
+                  summary: Rate limit exceeded
+                  value:
+                    error: "Too Many Requests"
+                    detail: "Rate limit of 10 requests/minute exceeded for partner-a. Please wait before retrying."
+                    status: 429
+                    usage:
+                      partner: "partner-a"
+                      requests_last_minute: 10
+                      rate_limit_per_minute: 10
+                      requests_today: 45
+                      daily_quota: 100
+        '401':
+          description: HuggingFace infrastructure bearer token invalid or missing
+        '403':
+          description: HuggingFace endpoint access forbidden
+        '503':
+          description: HuggingFace endpoint is starting up or unavailable
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: HuggingFace infrastructure bearer token (HF_TOKEN env var)
+
+  schemas:
+
+    ForecastRequest:
+      type: object
+      required: [x-api-key, inputs]
+      properties:
+        x-api-key:
+          type: string
+          description: >
+            Raw partner API key. Must be a top-level JSON body field —
+            HF Inference Endpoints do not forward custom HTTP headers to the handler.
+        inputs:
+          type: object
+          required: [data]
+          properties:
+            data:
+              $ref: '#/components/schemas/InputData'
+            parameters:
+              $ref: '#/components/schemas/ForecastParameters'
+
+    InputData:
+      type: object
+      required: [month, product_id, market_id, units_sold]
+      description: >
+        Columnar time-series data. All arrays must be the same length.
+        Provide at least `encoder_length` historical rows per product-market pair.
+        Set `units_sold = null` for the last `prediction_length` rows (forecast horizon).
+      properties:
+        month:
+          type: array
+          items: { type: string, example: "2024-01" }
+          description: Month in YYYY-MM format.
+        product_id:
+          type: array
+          items: { type: string }
+        market_id:
+          type: array
+          items: { type: string }
+        units_sold:
+          type: array
+          items: { type: number, nullable: true }
+          description: Historical demand. Null for forecast horizon rows.
+        planned_price_index:
+          type: array
+          items: { type: number, nullable: true }
+          description: Price relative to baseline (1.0 = no change). Default 1.0.
+        planned_discount_pct:
+          type: array
+          items: { type: number, nullable: true }
+          description: Discount percentage 0–100. Default 0.
+        planned_promo_flag:
+          type: array
+          items: { type: number, nullable: true }
+          description: Promotional flag (0 = off, 1 = on). Default 0.
+        planned_tender_flag:
+          type: array
+          items: { type: number, nullable: true }
+          description: Tender/bid flag (0 = off, 1 = on). Default 0.
+        planned_supply_risk:
+          type: array
+          items: { type: number, nullable: true }
+          description: Supply risk level (0 = low, 1 = high). Default 0.
+        planned_competitor_pressure:
+          type: array
+          items: { type: number, nullable: true }
+          description: Competitor pressure (0 = low, 1 = high). Default 0.
+        planned_regulatory_event_flag:
+          type: array
+          items: { type: number, nullable: true }
+          description: Regulatory event flag (0 = none, 1 = active). Default 0.
+
+    ForecastParameters:
+      type: object
+      properties:
+        encoder_length:
+          type: integer
+          default: 12
+          description: Historical months fed to the encoder.
+        prediction_length:
+          type: integer
+          default: 6
+          description: Months to forecast.
+        batch_size:
+          type: integer
+          default: 256
+        n_samples:
+          type: integer
+          default: 1000
+          description: Monte Carlo samples for probabilistic output.
+        quantiles:
+          type: array
+          items: { type: number, minimum: 0, maximum: 1 }
+          default: [0.1, 0.5, 0.9]
+          description: Quantiles to compute. 0.5 is always included.
+        round_outputs:
+          type: boolean
+          default: false
+          description: Round forecast values to nearest integer.
+        scenarios:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties: { type: number }
+          default: { base: {} }
+          description: >
+            Named scenarios. Each is a dict of `planned_*` variable overrides
+            applied only to forecast-horizon rows. "base" is always included.
+          example:
+            base: {}
+            price_up_10pct: { planned_price_index: 1.1 }
+            discount_20pct: { planned_discount_pct: 20 }
+            growth_push:
+              planned_price_index: 0.95
+              planned_discount_pct: 10
+              planned_promo_flag: 1.0
+
+    ForecastResponse:
+      type: object
+      properties:
+        forecasts:
+          type: array
+          items: { $ref: '#/components/schemas/ForecastRow' }
+        summary:
+          $ref: '#/components/schemas/ForecastSummary'
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    ForecastRow:
+      type: object
+      properties:
+        scenario:        { type: string }
+        product_id:      { type: string }
+        market_id:       { type: string }
+        time_idx:        { type: integer }
+        month:           { type: string, description: "YYYY-MM-DD" }
+        horizon_step:    { type: integer, description: "1 … prediction_length" }
+        point_mean:      { type: number, description: "P50 median forecast" }
+        p10:             { type: number }
+        p50:             { type: number }
+        p90:             { type: number }
+        confidence_label:
+          type: string
+          enum: [HIGH, MEDIUM, LOW]
+        confidence_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        requires_review:
+          type: boolean
+          description: True when confidence_label is LOW
+        planned_price_index:          { type: number }
+        planned_discount_pct:         { type: number }
+        planned_promo_flag:           { type: number }
+        planned_tender_flag:          { type: number }
+        planned_regulatory_event_flag: { type: number }
+        planned_supply_risk:          { type: number }
+        planned_competitor_pressure:  { type: number }
+
+    ForecastSummary:
+      type: object
+      properties:
+        total_forecasts: { type: integer }
+        scenarios:
+          type: array
+          items: { type: string }
+        products:  { type: integer }
+        markets:   { type: integer }
+        confidence_distribution:
+          type: object
+          additionalProperties: { type: integer }
+          example: { HIGH: 120, MEDIUM: 36, LOW: 12 }
+
+    ResponseMetadata:
+      type: object
+      properties:
+        model_type:      { type: string, example: DeepAR }
+        target:          { type: string, example: units_sold }
+        series_columns:
+          type: array
+          items: { type: string }
+        partner:
+          type: string
+          description: Authenticated partner name
+          example: partner-a
+        usage:
+          $ref: '#/components/schemas/UsageSnapshot'
+
+    UsageSnapshot:
+      type: object
+      properties:
+        partner:                { type: string }
+        requests_last_minute:   { type: integer }
+        rate_limit_per_minute:  { type: integer }
+        requests_today:         { type: integer }
+        daily_quota:            { type: integer }
+
+    HandlerErrorResponse:
+      type: object
+      description: >
+        Handler-level error returned as HTTP 200. Always check for the `error`
+        field before treating the response as a successful forecast.
+      properties:
+        error:
+          type: string
+          enum: [Unauthorized, Too Many Requests]
+        detail:
+          type: string
+          description: Human-readable reason
+        status:
+          type: integer
+          enum: [401, 429]
+        usage:
+          $ref: '#/components/schemas/UsageSnapshot'
+          description: Present only on 429 (throttle) responses

@@ -1,0 +1,15 @@
+Copyright (c) 2026 Diskover Diagnostics
+
+All rights reserved.
+
+This repository contains proprietary software and documentation.
+
+This repository is made publicly available solely for the purpose of providing API documentation and integration materials for the DemandScape API.
+
+No license is granted to copy, modify, distribute, sublicense, or use the contents of this repository except as expressly authorized by Diskover Diagnostics.
+
+Unauthorized use is strictly prohibited.
+
+For commercial licensing or integration inquiries:
+
+info@diskoverdiagnostics.com
