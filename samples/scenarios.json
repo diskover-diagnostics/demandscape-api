@@ -1,0 +1,71 @@
+{
+  "base": {},
+  "price_up_2pct": {
+    "planned_price_index": 1.02
+  },
+  "price_up_5pct": {
+    "planned_price_index": 1.05
+  },
+  "price_up_10pct": {
+    "planned_price_index": 1.1
+  },
+  "price_down_2pct": {
+    "planned_price_index": 0.98
+  },
+  "price_down_5pct": {
+    "planned_price_index": 0.95
+  },
+  "price_down_10pct": {
+    "planned_price_index": 0.9
+  },
+  "discount_5pct": {
+    "planned_discount_pct": 5
+  },
+  "discount_10pct": {
+    "planned_discount_pct": 10
+  },
+  "discount_20pct": {
+    "planned_discount_pct": 20
+  },
+  "promo_on": {
+    "planned_promo_flag": 1.0
+  },
+  "promo_off": {
+    "planned_promo_flag": 0.0
+  },
+  "tender_on": {
+    "planned_tender_flag": 1.0
+  },
+  "regulatory_event": {
+    "planned_regulatory_event_flag": 1.0
+  },
+  "supply_risk_high": {
+    "planned_supply_risk": 1.0
+  },
+  "competitor_pressure_high": {
+    "planned_competitor_pressure": 1.0
+  },
+  "growth_push": {
+    "planned_price_index": 0.95,
+    "planned_discount_pct": 10,
+    "planned_promo_flag": 1.0
+  },
+  "margin_push": {
+    "planned_price_index": 1.05,
+    "planned_discount_pct": 0.0,
+    "planned_promo_flag": 0.0
+  },
+  "promo_plus_discount": {
+    "planned_discount_pct": 15,
+    "planned_promo_flag": 1.0
+  },
+  "tender_plus_supply_risk": {
+    "planned_tender_flag": 1.0,
+    "planned_supply_risk": 1.0
+  },
+  "worst_case": {
+    "planned_price_index": 1.1,
+    "planned_supply_risk": 1.0,
+    "planned_competitor_pressure": 1.0
+  }
+}
