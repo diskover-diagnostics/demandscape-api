@@ -1,7 +1,7 @@
 openapi: 3.0.3
 
 # Hosted on GitHub — served via jsDelivr CDN:
-# https://cdn.jsdelivr.net/gh/{owner}/{repo}@main/openapi.yaml
+# https://cdn.jsdelivr.net/gh/diskover-diagnostics/demandscape-api/openapi.yaml
 
 info:
   title: DemandScape Forecast API
@@ -382,3 +382,4 @@ components:
         usage:
           $ref: '#/components/schemas/UsageSnapshot'
           description: Present only on 429 (throttle) responses
+
