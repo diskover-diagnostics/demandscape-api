@@ -1,47 +1,139 @@
+# DemandScape API
 
-# DemandScape Forecast API
+DemandScape provides demand forecasting and commercial scenario simulation via REST API.
 
-DemandScape provides AI-powered demand forecasting and scenario simulation.
+DemandScape enables platforms, system integrators, and analytics providers to integrate forecasting directly into their existing user interfaces.
 
-## Base URL
+---
 
-POST https://demandscape-orchestrator.fly.dev/v1/infer
+# Quickstart
 
-## Authentication
+Run your first forecast in 5 minutes:
 
+[Quickstart Guide](./QUICKSTART.md)
+
+---
+
+# Base Endpoint
+
+```
+https://demandscape-orchestrator.fly.dev/v1/infer
+```
+
+Method:
+
+```
+POST /v1/infer
+```
+
+---
+
+# Authentication
+
+DemandScape uses a single authentication layer.
+
+Partner API key as Bearer token:
+
+```
 Authorization: Bearer PARTNER_API_KEY
+```
 
-Partners DO NOT need Hugging Face tokens.
-
----
-
-## Architecture
-
-Partner → Diskover Orchestrator → Hugging Face → DeepAR Model → Response
+Partners do **not** need a Hugging Face token. All requests go through the Diskover Orchestrator.
 
 ---
 
-## Multi‑Scenario Support
+# Documentation
 
-Scenarios must be provided inside:
+Integration Guide:
 
-inputs.parameters.scenarios
+./guides/integration-guide.md
 
-Example:
+Partner Pack:
 
-"parameters": {
-  "encoder_length": 12,
-  "prediction_length": 6,
-  "scenarios": {
-    "base": {},
-    "price_up_5pct": {
-      "planned_price_index": 1.05
-    }
-  }
-}
+./partner-pack/partner-pack.md
+
+OpenAPI Specification:
+
+./openapi.yaml
+
+Postman Collection:
+
+./postman/
+
+Sample Data:
+
+./samples/
 
 ---
 
-## Support
+# What DemandScape Predicts
+
+DemandScape forecasts:
+
+• units sold  
+• confidence intervals  
+• forecast risk  
+
+across:
+
+• products  
+• markets  
+• scenarios  
+
+---
+
+# Supported Platforms
+
+DemandScape integrates with:
+
+• Salesforce  
+• SAP  
+• Snowflake  
+• Power BI  
+• Tableau  
+• Databricks  
+• HubSpot  
+
+---
+
+# Postman Quick Test
+
+Import:
+
+postman/demandscape-postman-collection.json
+
+Set environment variable `partner_api_key` and run:
+
+Base Forecast
+
+---
+
+# Integration Time
+
+Typical integration time:
+
+1–4 weeks
+
+---
+
+# Architecture
+
+Partner → Diskover Orchestrator (Fly.io) → Hugging Face → DeepAR Model → Response
+
+See:
+
+images/demandscape_architecture_diagram.png
+
+---
+
+# Request Access
 
 info@diskoverdiagnostics.com
+
+---
+
+# License
+
+Copyright DemandScape
+
+All rights reserved.
