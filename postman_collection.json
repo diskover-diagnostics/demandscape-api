@@ -1,0 +1,24 @@
+{
+  "info": {
+    "name": "DemandScape API"
+  },
+  "item": [
+    {
+      "name": "Forecast",
+      "request": {
+        "method": "POST",
+        "url": "https://demandscape-orchestrator.fly.dev/v1/infer",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{partner_api_key}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    }
+  ]
+}

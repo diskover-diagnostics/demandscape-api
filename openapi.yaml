@@ -1,0 +1,20 @@
+
+openapi: 3.0.0
+info:
+  title: DemandScape API
+  version: 3.0
+
+servers:
+  - url: https://demandscape-orchestrator.fly.dev/v1/infer
+
+paths:
+  /v1/infer:
+    post:
+      summary: Forecast demand
+      security:
+        - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
