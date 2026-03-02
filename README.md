@@ -46,11 +46,11 @@ Partners do **not** need a Hugging Face token. All requests go through the Disko
 
 Integration Guide:
 
-./guides/integration-guide.md
+./integration-guide.md
 
 Partner Pack:
 
-./partner-pack/partner-pack.md
+./partner-pack.md
 
 OpenAPI Specification:
 
@@ -58,7 +58,7 @@ OpenAPI Specification:
 
 Postman Collection:
 
-./postman/
+./postman_collection.json
 
 Sample Data:
 
@@ -100,11 +100,11 @@ DemandScape integrates with:
 
 Import:
 
-postman/demandscape-postman-collection.json
+postman_collection.json
 
 Set environment variable `partner_api_key` and run:
 
-Base Forecast
+Run Forecast
 
 ---
 
@@ -122,7 +122,7 @@ Partner → Diskover Orchestrator (Fly.io) → Hugging Face → DeepAR Model →
 
 See:
 
-images/demandscape_architecture_diagram.png
+demandscape_architecture_diagram.png
 
 ---
 
