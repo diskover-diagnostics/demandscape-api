@@ -32,10 +32,10 @@ info@diskoverdiagnostics.com
 
 Download:
 
-- demandscape-postman-collection.json
-- demandscape-postman-environment.json
+- postman_collection.json
 
-Open Postman → Import → Upload both files.
+
+Open Postman → Import → Upload file.
 
 ---
 
@@ -59,19 +59,11 @@ https://demandscape-orchestrator.fly.dev/v1/infer
 
 ---
 
-# Step 4 — Run First Forecast
+# Step 4 — Run Forecast
 
 In Postman:
 
-Select:
-
-**1 – Base Forecast (single scenario)**
-
-Click:
-
-Send
-
----
+Replace body with content in example-multi-scenario.json
 
 # Step 5 — View Response
 
@@ -96,36 +88,8 @@ Success means integration is working.
 
 ---
 
-# Step 6 — Run Scenario Simulation
 
-Select:
-
-**2 – Multi‑Scenario Forecast**
-
-DemandScape will simulate:
-
-- price changes
-- discount changes
-- promotion impact
-
----
-
-# Step 7 — Run Strategic Scenarios
-
-Select:
-
-**3 – Strategic Scenarios Pack**
-
-Simulates:
-
-- growth strategy
-- margin optimization
-- worst case
-- supply risk
-
----
-
-# Step 8 — Production Integration Flow
+# Step 6 — Production Integration Flow
 
 Typical flow:
 
@@ -140,7 +104,7 @@ Data sources:
 
 ---
 
-# Step 9 — Test Using cURL
+# Step 7 — Test Using cURL
 
 > `inputs.data` must be **columnar** — a dict of arrays, not a list of row objects.  
 > The last `prediction_length` rows (default 6) must have `units_sold: null`.
