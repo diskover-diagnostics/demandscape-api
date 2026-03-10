@@ -1,24 +1,58 @@
 {
   "info": {
-    "name": "DemandScape API"
+    "name": "DemandScape API",
+    "_postman_id": "demandscape-collection",
+    "description": "DemandScape forecasting API example request",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    {
+      "key": "partner_api_key",
+      "value": "PASTE_YOUR_API_KEY_HERE",
+      "type": "string"
+    }
+  ],
   "item": [
     {
-      "name": "Forecast",
+      "name": "Demand Forecast Inference",
       "request": {
         "method": "POST",
-        "url": "https://demandscape-orchestrator.fly.dev/v1/infer",
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{partner_api_key}}"
+            "value": "Bearer {{partner_api_key}}",
+            "type": "text"
           },
           {
             "key": "Content-Type",
-            "value": "application/json"
+            "value": "application/json",
+            "type": "text"
           }
-        ]
-      }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"inputs\": {\n    \"data\": {\n      \"month\": [\n        \"2023-01\",\"2023-02\",\"2023-03\",\"2023-04\",\"2023-05\",\"2023-06\",\n        \"2023-07\",\"2023-08\",\"2023-09\",\"2023-10\",\"2023-11\",\"2023-12\",\n        \"2024-01\",\"2024-02\",\"2024-03\",\"2024-04\",\"2024-05\",\"2024-06\"\n      ],\n      \"product_id\": [\n        \"P001\",\"P001\",\"P001\",\"P001\",\"P001\",\"P001\",\n        \"P001\",\"P001\",\"P001\",\"P001\",\"P001\",\"P001\",\n        \"P001\",\"P001\",\"P001\",\"P001\",\"P001\",\"P001\"\n      ],\n      \"market_id\": [\n        \"US\",\"US\",\"US\",\"US\",\"US\",\"US\",\n        \"US\",\"US\",\"US\",\"US\",\"US\",\"US\",\n        \"US\",\"US\",\"US\",\"US\",\"US\",\"US\"\n      ],\n      \"units_sold\": [\n        320,340,310,360,350,380,\n        370,400,390,420,410,440,\n        null,null,null,null,null,null\n      ]\n    },\n\n    \"parameters\": {\n      \"encoder_length\": 12,\n      \"prediction_length\": 6,\n\n      \"scenarios\": {\n        \"base\": {},\n\n        \"price_up_5pct\": {\n          \"planned_price_index\": 1.05\n        },\n\n        \"price_down_10pct\": {\n          \"planned_price_index\": 0.9\n        },\n\n        \"discount_10pct\": {\n          \"planned_discount_pct\": 10\n        },\n\n        \"promo_on\": {\n          \"planned_promo_flag\": 1.0\n        },\n\n        \"growth_push\": {\n          \"planned_price_index\": 0.95,\n          \"planned_discount_pct\": 10,\n          \"planned_promo_flag\": 1.0\n        },\n\n        \"worst_case\": {\n          \"planned_price_index\": 1.1,\n          \"planned_supply_risk\": 1.0,\n          \"planned_competitor_pressure\": 1.0\n        }\n      }\n    }\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://demandscape-orchestrator.fly.dev/v1/infer",
+          "protocol": "https",
+          "host": [
+            "demandscape-orchestrator",
+            "fly",
+            "dev"
+          ],
+          "path": [
+            "v1",
+            "infer"
+          ]
+        }
+      },
+      "response": []
     }
   ]
 }
