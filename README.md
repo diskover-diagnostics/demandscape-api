@@ -1,4 +1,4 @@
-# DemandScape API
+# DemandScape API - Superseded by the new Demandscape suite api - https://github.com/diskover-diagnostics/demandscape-suite-api
 
 DemandScape provides demand forecasting and commercial scenario simulation via REST API.
 
